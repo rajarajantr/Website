@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>My Website</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#">My Website</a>
+        <button id="navToggle" class="nav-toggle" aria-label="Toggle navigation">☰</button>
+        <nav class="site-nav" id="siteNav">
+          <a href="#features">Features</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <h1>Simple, responsive starter website</h1>
+          <p>Fast to edit, easy to extend. Built with plain HTML/CSS/JS.</p>
+          <p><a class="btn" href="#features">Explore features</a></p>
+        </div>
+      </section>
+
+      <section id="features" class="section container">
+        <h2>Features</h2>
+        <div class="grid">
+          <article>
+            <h3>Responsive</h3>
+            <p>Mobile-first layout that adapts to any screen size.</p>
+          </article>
+          <article>
+            <h3>Easy to edit</h3>
+            <p>Single index.html and styles.css to modify.</p>
+          </article>
+          <article>
+            <h3>No build step</h3>
+            <p>Just open index.html or serve the folder with a static server.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="about" class="section alt">
+        <div class="container">
+          <h2>About</h2>
+          <p>This is a minimal website starter. Add your content, components, and assets to expand it.</p>
+        </div>
+      </section>
+
+      <section id="contact" class="section container">
+        <h2>Contact</h2>
+        <form class="contact-form" onsubmit="event.preventDefault(); alert('Form submit simulated.');">
+          <label>
+            Name
+            <input type="text" name="name" required>
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" required>
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="4" required></textarea>
+          </label>
+          <button class="btn" type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> My Website — Built with a simple starter.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Nav toggle for small screens
+      const navToggle = document.getElementById('navToggle');
+      const siteNav = document.getElementById('siteNav');
+      navToggle.addEventListener('click', () => siteNav.classList.toggle('open'));
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
