@@ -11,6 +11,25 @@
       <div class="container header-inner">
         <a class="brand" href="#">My Website</a>
         <button id="navToggle" class="nav-toggle" aria-label="Toggle navigation">☰</button>
+
+        <!-- Wallpaper selector -->
+        <div class="wallpaper-control">
+          <button id="wallpaperBtn" class="wallpaper-btn" aria-haspopup="true" aria-expanded="false" title="Change wallpaper">🎨</button>
+          <div id="wallpaperPanel" class="wallpaper-panel" aria-label="Wallpaper choices">
+            <div class="wallpaper-grid">
+              <button class="wallpaper-thumb" data-wallpaper="default" title="Default" style="background:var(--bg)">Default</button>
+              <button class="wallpaper-thumb" data-wallpaper="linear-gradient(180deg,#e0f2fe,#f0f9ff)" title="Blue gradient" style="background:linear-gradient(180deg,#e0f2fe,#f0f9ff)"> </button>
+              <button class="wallpaper-thumb" data-wallpaper="linear-gradient(180deg,#fff0f6,#fff7ed)" title="Warm gradient" style="background:linear-gradient(180deg,#fff0f6,#fff7ed)"> </button>
+              <button class="wallpaper-thumb" data-wallpaper="linear-gradient(180deg,#eef2ff,#f8fafc)" title="Soft gradient" style="background:linear-gradient(180deg,#eef2ff,#f8fafc)"> </button>
+            </div>
+            <label class="wallpaper-upload">
+              Upload image
+              <input id="wallpaperFile" type="file" accept="image/*">
+            </label>
+            <button id="wallpaperReset" class="wallpaper-reset">Reset</button>
+          </div>
+        </div>
+
         <nav class="site-nav" id="siteNav">
           <a href="#features">Features</a>
           <a href="#about">About</a>
@@ -71,6 +90,48 @@
           <button class="btn" type="submit">Send</button>
         </form>
       </section>
+
+      <section id="sell" class="section container">
+        <h2>Sell With Us</h2>
+        <p>Sell handmade, paper goods, or story-based items — submit your listing below.</p>
+        <form id="sellForm" class="contact-form">
+          <label>
+            Item title
+            <input type="text" name="title" required>
+          </label>
+          <label>
+            Category
+            <select name="category" required>
+              <option value="stories">Stories</option>
+              <option value="paper">Paper crafts</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>
+            Price (USD)
+            <input type="number" name="price" min="0" step="0.01" required>
+          </label>
+          <label>
+            Short description
+            <textarea name="description" rows="3" required></textarea>
+          </label>
+          <label>
+            Contact email
+            <input type="email" name="sellerEmail" required>
+          </label>
+          <label>
+            Images
+            <input id="itemImages" type="file" name="images" accept="image/*" multiple>
+          </label>
+          <label>
+            <input type="checkbox" name="agree" required> I confirm I have the right to sell this item.
+          </label>
+          <button class="btn" type="submit">Submit listing</button>
+        </form>
+
+        <h3>Your Listings</h3>
+        <div id="sellerListings" class="listing-grid"></div>
+      </section>
     </main>
 
     <footer class="site-footer">
@@ -85,6 +146,116 @@
       const siteNav = document.getElementById('siteNav');
       navToggle.addEventListener('click', () => siteNav.classList.toggle('open'));
       document.getElementById('year').textContent = new Date().getFullYear();
+
+      // Wallpaper selector
+      const wallpaperBtn = document.getElementById('wallpaperBtn');
+      const wallpaperPanel = document.getElementById('wallpaperPanel');
+      const wallpaperThumbs = document.querySelectorAll('.wallpaper-thumb');
+      const wallpaperFile = document.getElementById('wallpaperFile');
+      const wallpaperReset = document.getElementById('wallpaperReset');
+
+      function applyWallpaper(value, persist = true) {
+        if (!value || value === 'default') {
+          document.body.style.backgroundImage = '';
+          document.body.style.backgroundColor = '';
+        } else {
+          document.body.style.backgroundImage = value;
+        }
+        if (persist) localStorage.setItem('wallpaper', value);
+      }
+
+      wallpaperBtn.addEventListener('click', () => {
+        const open = wallpaperPanel.classList.toggle('open');
+        wallpaperBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+
+      wallpaperThumbs.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = btn.getAttribute('data-wallpaper');
+          applyWallpaper(val);
+        });
+      });
+
+      wallpaperFile.addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = `url('${reader.result}')`;
+          applyWallpaper(dataUrl);
+        };
+        reader.readAsDataURL(f);
+      });
+
+      wallpaperReset.addEventListener('click', () => {
+        applyWallpaper('default');
+        localStorage.removeItem('wallpaper');
+      });
+
+      // restore on load
+      (function(){
+        const saved = localStorage.getItem('wallpaper');
+        if (saved) applyWallpaper(saved, false);
+      })();
+
+      // Seller listing form
+      const sellForm = document.getElementById('sellForm');
+      const sellerListings = document.getElementById('sellerListings');
+      const itemImages = document.getElementById('itemImages');
+
+      function readFilesAsDataURLs(files) {
+        const readers = Array.from(files).map(f => new Promise(res => {
+          const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
+        }));
+        return Promise.all(readers);
+      }
+
+      function renderListings() {
+        const stored = JSON.parse(localStorage.getItem('listings') || '[]');
+        sellerListings.innerHTML = '';
+        if (!stored.length) { sellerListings.innerHTML = '<p>No listings yet.</p>'; return; }
+        stored.slice().reverse().forEach(item => {
+          const card = document.createElement('div'); card.className = 'listing-card';
+          const img = document.createElement('div'); img.className = 'listing-img';
+          if (item.images && item.images.length) {
+            img.style.backgroundImage = `url('${item.images[0]}')`;
+          } else {
+            img.style.background = 'linear-gradient(180deg,#fff,#f3f4f6)';
+          }
+          const body = document.createElement('div'); body.className = 'listing-body';
+          body.innerHTML = `<h4>${escapeHtml(item.title)}</h4>
+            <div class="muted">${escapeHtml(item.category)} — $${Number(item.price).toFixed(2)}</div>
+            <p>${escapeHtml(item.description)}</p>
+            <div class="muted">Contact: ${escapeHtml(item.sellerEmail)}</div>`;
+          card.appendChild(img); card.appendChild(body);
+          sellerListings.appendChild(card);
+        });
+      }
+
+      function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+      sellForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(sellForm);
+        const title = data.get('title');
+        const category = data.get('category');
+        const price = data.get('price');
+        const description = data.get('description');
+        const sellerEmail = data.get('sellerEmail');
+        const files = itemImages.files;
+        let images = [];
+        if (files && files.length) images = await readFilesAsDataURLs(files);
+        const listing = { title, category, price, description, sellerEmail, images, createdAt: Date.now() };
+        const stored = JSON.parse(localStorage.getItem('listings') || '[]');
+        stored.push(listing);
+        localStorage.setItem('listings', JSON.stringify(stored));
+        sellForm.reset();
+        renderListings();
+        alert('Listing submitted — saved to localStorage for demo.');
+      });
+
+      // initial render
+      renderListings();
     </script>
   </body>
 </html>
